@@ -14,6 +14,32 @@ public class Courses {
     private String emailAddress;
     private String strtDate;
     private String endDate;
+    private String status;
+    private String notes;
+    private int termID;
+
+    public Courses(int courseID, String courseName, String instructorName, String phoneNumber, String emailAddress, String strtDate, String endDate, int termID,String status,String notes) {
+        this.courseID = courseID;
+        this.courseName = courseName;
+        this.instructorName = instructorName;
+        this.phoneNumber = phoneNumber;
+        this.emailAddress = emailAddress;
+        this.strtDate = strtDate;
+        this.endDate = endDate;
+        this.termID = termID;
+        this.status = status;
+        this.notes = notes;
+    }
+
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getStrtDate() {
         return strtDate;
@@ -31,18 +57,6 @@ public class Courses {
         this.endDate = endDate;
     }
 
-    private int termID;
-
-    public Courses(int courseID, String courseName, String instructorName, String phoneNumber, String emailAddress, String strtDate, String endDate, int termID) {
-        this.courseID = courseID;
-        this.courseName = courseName;
-        this.instructorName = instructorName;
-        this.phoneNumber = phoneNumber;
-        this.emailAddress = emailAddress;
-        this.strtDate = strtDate;
-        this.endDate = endDate;
-        this.termID = termID;
-    }
 
     public int getCourseID() {
         return courseID;
@@ -91,6 +105,16 @@ public class Courses {
     public void setTermID(int termID) {
         this.termID = termID;
     }
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+
+
 
 
 

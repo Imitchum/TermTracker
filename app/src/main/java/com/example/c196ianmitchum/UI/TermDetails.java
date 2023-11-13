@@ -46,11 +46,14 @@ public class TermDetails extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_term_details);
         FloatingActionButton fab = findViewById(R.id.floatingActionButton2);
+
         editTitle=findViewById(R.id.titletext);
         title = getIntent().getStringExtra("title");
         editTitle.setText(title);
+
         editStart=findViewById(R.id.startdatet);
         editEnd = findViewById(R.id.enddatet);
+
         termID =getIntent().getIntExtra("id",-1);
 
         editStart = findViewById(R.id.startdatet);
@@ -66,6 +69,7 @@ public class TermDetails extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(TermDetails.this, CourseDetails.class);
+                intent.putExtra("termID",termID);
                 startActivity(intent);
             }
         });
@@ -141,24 +145,25 @@ public class TermDetails extends AppCompatActivity {
                 myCalendarStart.set(Calendar.YEAR, year);
                 myCalendarStart.set(Calendar.MONTH, month);
                 myCalendarStart.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateLabelStart();
+                updateLabelEnd();
 
             }
-
         };
-
-
-
-
-
     }
 
     private void updateLabelStart() {
         String myFormat = "MM/dd/yy";
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         editStart.setText(sdf.format(myCalendarStart.getTime()));
-
     }
+
+    private void updateLabelEnd() {
+        String myFormat = "MM/dd/yy";
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        editEnd.setText(sdf.format(myCalendarStart.getTime()));
+    }
+
+
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.menu_term_details,menu);
         return true;

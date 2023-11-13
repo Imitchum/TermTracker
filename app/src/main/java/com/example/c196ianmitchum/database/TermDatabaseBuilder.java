@@ -14,7 +14,7 @@ import com.example.c196ianmitchum.entities.Assessments;
 import com.example.c196ianmitchum.entities.Courses;
 import com.example.c196ianmitchum.entities.Terms;
 
-@Database(entities = {Terms.class, Courses.class, Assessments.class},version = 6,exportSchema = false)
+@Database(entities = {Terms.class, Courses.class, Assessments.class},version = 9,exportSchema = false)
 public abstract class TermDatabaseBuilder extends RoomDatabase {
     public abstract TermDAO termDAO();
     public abstract CourseDAO courseDAO();

@@ -55,13 +55,13 @@ public class TermList extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.sample) {
             repository=new Repository(getApplication());
-         Terms terms = new Terms(0,"Term 1","11/9/23","12/31/23");
+         Terms terms = new Terms(1,"Term 1","11/9/23","12/31/23");
          repository.insert(terms);
          terms = new Terms(2,"Term 2","1/1/24","7/1/24");
          repository.insert(terms);
-         Courses courses = new Courses(0,"Course 1","M.Jones","555-555-555","mjones@wgu.edu","11/10/23","12/31/23",1);
+         Courses courses = new Courses(1,"Course 1","M.Jones","555-555-555","mjones@wgu.edu","11/10/23","12/31/23",1,"Completed", "test");
          repository.insert(courses);
-         courses = new Courses(0,"Course 2","D.Terry","333-555-111","dterry@wgu.edu","11/10/23","12/31/23",1);
+         courses = new Courses(2,"Course 2","D.Terry","333-555-111","dterry@wgu.edu","11/10/23","12/31/23",1,"Completed", "test");
          repository.insert(courses);
          Assessments assessments = new Assessments(0,"Course 1 Assessment",1);
          repository.insert(assessments);
@@ -74,6 +74,6 @@ public class TermList extends AppCompatActivity {
             return true;
         }
 
-        return true;
-    }
+      return true;
+   }
 }
