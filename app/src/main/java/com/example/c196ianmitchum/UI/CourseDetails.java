@@ -1,8 +1,9 @@
 package com.example.c196ianmitchum.UI;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
@@ -16,25 +17,22 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.c196ianmitchum.R;
 import com.example.c196ianmitchum.database.Repository;
+import com.example.c196ianmitchum.entities.Assessments;
 import com.example.c196ianmitchum.entities.Courses;
 import com.example.c196ianmitchum.entities.Terms;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
-import java.util.SimpleTimeZone;
 
 public class CourseDetails extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     Repository repository;
@@ -61,13 +59,26 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
 
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_course_details);
+        FloatingActionButton fab =findViewById(R.id.floatingActionButton3);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(CourseDetails.this, AssessmentDetails.class);
+                startActivity(intent);
+            }
+        });
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerviewcd);
         repository = new Repository(getApplication());
+        List<Assessments> allAssessments = repository.getmAllAssessments();
+        final AssessmentAdapter assessmentAdapter = new AssessmentAdapter(this);
+        recyclerView.setAdapter(assessmentAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        assessmentAdapter.setAssessments(allAssessments);
 
         courseID = getIntent().getIntExtra("id",-1);
         termID = getIntent().getIntExtra("termID",-1);
@@ -97,9 +108,8 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
         endDatec.setText(endstring);
 
         editNote = findViewById(R.id.notecd);
-        String editnotes = getIntent().getStringExtra("notes");
-        editNote.setText(editnotes);
-
+        notes = getIntent().getStringExtra("notes");
+        editNote.setText(notes);
 
 
         Spinner statusspinner = (Spinner)findViewById(R.id.spinner3);
@@ -113,33 +123,8 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        editNote = findViewById(R.id.notecd);
-
-
         String myFormat = "MM/dd/yy";
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-
 
         startDatec.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,8 +189,6 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
     }
 
 
-
-
     private void updateLabelStart() {
             String myFormat = "MM/dd/yy";
             SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
@@ -223,6 +206,18 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_course_details, menu);
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        List<Assessments> allAssessments = repository.getmAllAssessments();
+        RecyclerView recyclerView = findViewById(R.id.recyclerviewcd);
+        final AssessmentAdapter assessmentAdapter = new AssessmentAdapter(this);
+        recyclerView.setAdapter(assessmentAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        assessmentAdapter.setAssessments(allAssessments);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -251,10 +246,13 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
             return true;
         }
 
-        for(Courses courses: repository.getmAllCourses()) {
-            if(courses.getCourseID() == courseID) {
-                repository.delete(courses);
-                Toast.makeText(CourseDetails.this, courses.getCourseName() + "Course was deleted.",Toast.LENGTH_LONG).show();}
+        if(item.getItemId() == R.id.deletecourse) {
+            for (Courses courses : repository.getmAllCourses()) {
+                if (courses.getCourseID() == courseID) {
+                    repository.delete(courses);
+                    Toast.makeText(CourseDetails.this, courses.getCourseName() + "Course was deleted.", Toast.LENGTH_LONG).show();
+                }
+            }
         }
 
 
@@ -263,7 +261,7 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
             Intent sentIntent= new Intent();
             sentIntent.setAction(Intent.ACTION_SEND);
             sentIntent.putExtra(Intent.EXTRA_TEXT, editNote.getText().toString()+ "EXTRA_TEXT");
-            sentIntent.putExtra(Intent.EXTRA_TITLE, editNote.getText().toString()+ "EXTRA_TITLE");
+            sentIntent.putExtra(Intent.EXTRA_TITLE, editNote.getText().toString()+ "Course Note");
             sentIntent.setType("text/plain");
             Intent shareIntent=Intent.createChooser(sentIntent,null);
             startActivity(shareIntent);
@@ -271,6 +269,25 @@ public class CourseDetails extends AppCompatActivity implements AdapterView.OnIt
         }
         if(item.getItemId()==R.id.notify) {
             String dateFromScreen = startDatec.getText().toString();
+            String myFormat = "MM/dd/yy";
+            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+            Date myDate = null;
+            try {
+                myDate = sdf.parse(dateFromScreen);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Long trigger = myDate.getTime();
+            Intent intent = new Intent(CourseDetails.this, MyReceiver.class);
+            intent.putExtra("key","Course Notification: ");
+            PendingIntent sender = PendingIntent.getBroadcast(CourseDetails.this,++MainActivity.numAlert,intent,PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, trigger, sender);
+            return true;
+        }
+
+        if(item.getItemId()==R.id.notify) {
+            String dateFromScreen = endDatec.getText().toString();
             String myFormat = "MM/dd/yy";
             SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
             Date myDate = null;

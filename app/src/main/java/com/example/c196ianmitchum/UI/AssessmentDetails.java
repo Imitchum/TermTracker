@@ -5,84 +5,82 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.c196ianmitchum.R;
 import com.example.c196ianmitchum.database.Repository;
 import com.example.c196ianmitchum.entities.Assessments;
 import com.example.c196ianmitchum.entities.Courses;
-import com.example.c196ianmitchum.entities.Terms;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class TermDetails extends AppCompatActivity {
+public class AssessmentDetails extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    Repository repository;
+
+    int courseID;
+    int assessmentID;
     String title;
-    int termID;
+    String type;
+    EditText editTitle;
     EditText editStart;
     EditText editEnd;
-    EditText editTitle;
-    Repository repository;
-    Terms currentTerm;
-    int numCourses;
+
+
     DatePickerDialog.OnDateSetListener startDate;
     DatePickerDialog.OnDateSetListener endDate;
     final Calendar myCalendarStart = Calendar.getInstance();
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_term_details);
-        FloatingActionButton fab = findViewById(R.id.floatingActionButton2);
+        setContentView(R.layout.activity_assessments);
 
-        editTitle=findViewById(R.id.titletext);
+        repository = new Repository(getApplication());
+
+        editTitle = findViewById(R.id.titletextA);
         title = getIntent().getStringExtra("title");
         editTitle.setText(title);
 
-        termID =getIntent().getIntExtra("id",-1);
+        editStart = findViewById(R.id.startdateA);
+        editEnd = findViewById(R.id.enddateA);
 
-        editStart = findViewById(R.id.startdatet);
-        String startstring = getIntent().getStringExtra("startdate");
-        editStart.setText(startstring);
+        courseID = getIntent().getIntExtra("courseID", -1);
+        assessmentID = getIntent().getIntExtra("id", -1);
 
-        editEnd = findViewById(R.id.enddatet);
-        String endstring = getIntent().getStringExtra("enddate");
-        editEnd.setText(endstring);
+        editStart = findViewById(R.id.startdateA);
+        String start = getIntent().getStringExtra("startdate");
+        editStart.setText(start);
 
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(TermDetails.this, CourseDetails.class);
-                intent.putExtra("termID",termID);
-                startActivity(intent);
-            }
-        });
+        editEnd = findViewById(R.id.enddateA);
+        String end = getIntent().getStringExtra("enddate");
+        editEnd.setText(end);
 
 
-        RecyclerView recyclerView= findViewById(R.id.termrecylerview);
-        repository = new Repository(getApplication());
-        final CourseAdapter courseAdapter= new CourseAdapter(this);
-        recyclerView.setAdapter(courseAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        List<Courses> filteredCourses = new ArrayList<>();
-        for(Courses c: repository.getmAllCourses()) {
-            if(c.getTermID()==termID) filteredCourses.add(c);
-        }
-        courseAdapter.setCourses(filteredCourses);
+
+
+        Spinner typespinner = (Spinner)findViewById(R.id.assessmentspinner);
+        ArrayAdapter<CharSequence> typeadapter= ArrayAdapter.createFromResource(this,R.array.assessment_array, android.R.layout.simple_spinner_item);
+        typeadapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        typespinner.setAdapter(typeadapter);
+        typespinner.setOnItemSelectedListener(this);
+
+        type = getIntent().getStringExtra("type");
+        typespinner.setSelection(typeadapter.getPosition(type));
 
 
         String myFormat = "MM/dd/yy";
@@ -100,7 +98,7 @@ public class TermDetails extends AppCompatActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                new DatePickerDialog(TermDetails.this, startDate, myCalendarStart
+                new DatePickerDialog(AssessmentDetails.this, startDate, myCalendarStart
                         .get(Calendar.YEAR), myCalendarStart.get(Calendar.MONTH),
                         myCalendarStart.get(Calendar.DAY_OF_MONTH)).show();
 
@@ -130,7 +128,7 @@ public class TermDetails extends AppCompatActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                new DatePickerDialog(TermDetails.this, endDate, myCalendarStart
+                new DatePickerDialog(AssessmentDetails.this, endDate, myCalendarStart
                         .get(Calendar.YEAR), myCalendarStart.get(Calendar.MONTH),
                         myCalendarStart.get(Calendar.DAY_OF_MONTH)).show();
 
@@ -147,6 +145,8 @@ public class TermDetails extends AppCompatActivity {
 
             }
         };
+
+
     }
 
     private void updateLabelStart() {
@@ -161,57 +161,64 @@ public class TermDetails extends AppCompatActivity {
         editEnd.setText(sdf.format(myCalendarStart.getTime()));
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        List<Courses> allCourses = repository.getmAllCourses();
-        RecyclerView recyclerView = findViewById(R.id.termrecylerview);
-        final CourseAdapter courseAdapter = new CourseAdapter(this);
-        recyclerView.setAdapter(courseAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        courseAdapter.setCourses(allCourses);
-    }
-
-
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.menu_term_details,menu);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_assessment_details, menu);
         return true;
     }
+
+
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.saveterm) {
-            Terms terms;
-            if(termID==-1) {
-                if(repository.getmAllTerms().size()==0) termID=1;
-                else termID = repository.getmAllTerms().get(repository.getmAllTerms().size()-1).getTermID() +1;
-                terms = new Terms(termID,editTitle.getText().toString(),editStart.getText().toString(),editEnd.getText().toString());
-                repository.insert(terms);
-                this.finish();
-            }
-            else{
-                terms = new Terms(termID,editTitle.getText().toString(),editStart.getText().toString(),editEnd.getText().toString());
-                repository.update(terms);
-                this.finish();
-            }
+        if (item.getItemId() == android.R.id.home) {
+            this.finish();
+            return true;
         }
-        if(item.getItemId()==R.id.deleteterm){
-            for(Terms term:repository.getmAllTerms()) {
-                if (term.getTermID() == termID) currentTerm = term;
-            }
-                numCourses = 0;
-                for(Courses courses: repository.getmAllCourses()) {
-                    if(courses.getTermID()==termID)++numCourses;
-                }
-                if(numCourses==0){
-                    repository.delete(currentTerm);
-                    Toast.makeText(TermDetails.this,currentTerm.getTermTitle() +" was deleted.",Toast.LENGTH_LONG).show();
-                    TermDetails.this.finish();
-                }
-                else {
-                    Toast.makeText(TermDetails.this, "Can't delete a Term with courses.",Toast.LENGTH_LONG).show();
-                }
 
+        if (item.getItemId() == R.id.saveassessment) {
+            Assessments assessments;
+            if (assessmentID == -1) {
+                if(repository.getmAllAssessments().size()==0) assessmentID=1;
+                else assessmentID = repository.getmAllAssessments().get(repository.getmAllAssessments().size()-1).getAssessmentID() +1;
+
+                assessments = new Assessments(assessmentID, editTitle.getText().toString(), courseID, editStart.getText().toString(), editEnd.getText().toString(), type);
+                repository.insert(assessments);
+            } else {
+                assessments = new Assessments(assessmentID, editTitle.getText().toString(), courseID, editStart.getText().toString(), editEnd.getText().toString(), type);
+                repository.update(assessments);
             }
+            this.finish();
+            return true;
+        }
+
+
+        if (item.getItemId() == R.id.deleteassessment) {
+            for (Assessments assessments : repository.getmAllAssessments()) {
+                if (assessments.getAssessmentID() == assessmentID) {
+                    repository.delete(assessments);
+                    Toast.makeText(AssessmentDetails.this, assessments.getAssessmentTitle() + " Assessment was deleted.", Toast.LENGTH_LONG).show();
+                }
+            }
+
+        }
+
 
         return true;
+    }
+
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
+        type = (String) parent.getItemAtPosition(pos);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
     }
 }
+
+
+
+
+
+
+

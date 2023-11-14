@@ -36,7 +36,7 @@ public class TermList extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        RecyclerView recyclerView=findViewById(R.id.recyclerview);
+        RecyclerView recyclerView=findViewById(R.id.termlistrecyclerview);
         repository=new Repository(getApplication());
         List<Terms> allTerms=repository.getmAllTerms();
         final TermAdapter termAdapter = new TermAdapter(this);
@@ -51,6 +51,20 @@ public class TermList extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_term_list,menu);
         return true;
     }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        List<Terms> allTerms = repository.getmAllTerms();
+        RecyclerView recyclerView = findViewById(R.id.termlistrecyclerview);
+        final TermAdapter termAdapter = new TermAdapter(this);
+        recyclerView.setAdapter(termAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        termAdapter.setTerms(allTerms);
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.sample) {
@@ -63,9 +77,9 @@ public class TermList extends AppCompatActivity {
          repository.insert(courses);
          courses = new Courses(2,"Course 2","D.Terry","333-555-111","dterry@wgu.edu","11/10/23","12/31/23",1,"Completed", "test");
          repository.insert(courses);
-         Assessments assessments = new Assessments(0,"Course 1 Assessment",1);
+         Assessments assessments = new Assessments(0,"Course 1 Assessment",1,"11/13/23","11/30/23","Performance");
          repository.insert(assessments);
-         assessments = new Assessments(0,"Course 2 Assessment",1);
+         assessments = new Assessments(0,"Course 2 Assessment",2,"11/13/23","11/30/23","Objective");
          repository.insert(assessments);
             return true;
         }
