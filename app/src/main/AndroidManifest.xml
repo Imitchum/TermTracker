@@ -19,9 +19,9 @@
             android:exported="true"></receiver>
 
         <activity
-            android:name=".UI.Assessment"
+            android:name=".UI.AssessmentDetails"
             android:exported="false"
-            android:label="Assessments"
+            android:label="Assessment Details"
             android:parentActivityName=".UI.CourseDetails" />
         <activity
             android:name=".UI.CourseDetails"
